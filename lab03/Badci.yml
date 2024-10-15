@@ -1,0 +1,26 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build_job:
+  stage: build
+  script:
+    - echo "Starting build..."
+    - docker build -t my-app:latest .
+    - echo "Build finished."
+
+test_job:
+  stage: test
+  script:
+    - echo "Starting tests..."
+    - pytest tests/
+    - echo "Tests finished."
+
+deploy_job:
+  stage: deploy
+  script:
+    - echo "Deploying..."
+    - scp -r ./app user@production:/var/www/my-app 
+  only:
+    - master
