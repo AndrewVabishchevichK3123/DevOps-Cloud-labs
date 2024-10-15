@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    environment:
+      - DEBUG=false
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    depends_on:
+      - db
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password
