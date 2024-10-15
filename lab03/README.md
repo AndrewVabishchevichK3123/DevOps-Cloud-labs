@@ -60,7 +60,7 @@ SCP — это небезопасный и непродуктивный спос
 Попробуем все исправить
 
 ```
-# Good .gitlab-ci.yml
+# Goodci.yml
 stages:
   - build
   - test
