@@ -1,3 +1,4 @@
+#Goodci.yml
 stages:
   - build
   - test
