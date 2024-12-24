@@ -98,7 +98,8 @@
 
 ## Результат
 С помощью документации продуктов Azure и гугла была сделана следующая таблица:
-![image](https://github.com/user-attachments/assets/2c164c32-0d40-4113-be15-4d401d62f36c)
+![image](https://github.com/user-attachments/assets/f4373038-1910-4239-a14b-eaf511a3d9bb)
+
 
 
 
