@@ -14,6 +14,7 @@ jobs:
       - name: Install dependencies
         run: |
           echo "Installing dependencies..."
+          npm init -y
           npm install
           npm install -g some-global-package
           echo "Dependencies installed."
