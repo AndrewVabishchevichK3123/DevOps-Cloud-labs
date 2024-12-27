@@ -7,17 +7,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Шаг: Клонирование репозитория
       - uses: actions/checkout@v2
 
-      # Шаг: Установка зависимостей
       - name: Install Dependencies
         run: |
           echo "Installing dependencies..."
           apt-get update && apt-get install -y python3 pip
           pip install pytest
 
-      # Шаг: Сборка и тестирование в одном блоке
       - name: Build and Test
         run: |
           echo "Starting build and tests..."
@@ -25,11 +22,9 @@ jobs:
           pytest tests/
           echo "Build and tests completed."
 
-      # Шаг: Небезопасный вывод чувствительных данных
       - name: Unsafe Secrets Handling
         run: echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
 
-      # Шаг: Деплой с хардкодированными значениями
       - name: Deploy to Production
         if: github.ref == 'refs/heads/master'
         run: |
@@ -37,7 +32,6 @@ jobs:
           scp -r ./app user@192.168.1.1:/var/www/my-app
           echo "Deployed successfully to production."
 
-      # Шаг: Очистка, которая может удалить лишнее
       - name: Cleanup
         run: |
           rm -rf ./*
