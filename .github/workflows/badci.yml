@@ -1,0 +1,39 @@
+# This is a basic workflow to help you get started with Actions
+
+name: BadCI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+#Badci.yml
+stages:
+  - build
+  - test
+  - deploy
+
+build_job:
+  stage: build
+  script:
+    - echo "Starting build..."
+    - docker build -t my-app:latest .
+    - echo "Build finished."
+
+test_job:
+  stage: test
+  script:
+    - echo "Starting tests..."
+    - pytest tests/
+    - echo "Tests finished."
+
+deploy_job:
+  stage: deploy
+  script:
+    - echo "Deploying..."
+    - scp -r ./app user@production:/var/www/my-app 
+  only:
+    - master
