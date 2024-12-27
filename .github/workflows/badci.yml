@@ -12,8 +12,8 @@ jobs:
       - name: Install Dependencies
         run: |
           echo "Installing dependencies..."
-          apt-get update && apt-get install -y python3 pip
-          pip install pytest
+          npm install
+          npm install -g some-package
 
       - name: Build and Test
         run: |
