@@ -16,8 +16,7 @@ jobs:
           npm install
 
       - name: Test
-        run: |
-          npm test
+        run: npm test
 
       - name: Unsafe Secrets Handling
         run: echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
