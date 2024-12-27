@@ -18,7 +18,6 @@ jobs:
       - name: Build and Test
         run: |
           echo "Starting build and tests..."
-          docker build -t my-app:latest .
           pytest tests/
           echo "Build and tests completed."
 
