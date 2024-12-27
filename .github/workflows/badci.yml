@@ -9,17 +9,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install Dependencies
+      - name: Build
         run: |
-          echo "Installing dependencies..."
-          npm install
-          npm install -g some-package
+          echo "Starting build..."
+          docker build -t my-app:latest .
+          echo "Build finished."
 
-      - name: Build and Test
+      - name: Test
         run: |
-          echo "Starting build and tests..."
-          npm test
-          echo "Build and tests completed."
+          echo "Starting tests..."
+          pytest tests/
+          echo "Tests finished."
 
       - name: Unsafe Secrets Handling
         run: echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
