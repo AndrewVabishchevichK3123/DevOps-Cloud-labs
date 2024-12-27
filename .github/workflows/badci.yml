@@ -3,34 +3,24 @@ name: Bad CI/CD Example
 on: push
 
 jobs:
-  ci-cd-job:
+
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build
+      - name: Install
         run: |
-          echo "Starting build..."
-          ls -la
-          docker build -t my-app:latest .
-          echo "Build finished."
+          npm init -y
+          npm install
 
       - name: Test
         run: |
-          echo "Starting tests..."
-          pytest tests/
-          echo "Tests finished."
+          npm test
 
       - name: Unsafe Secrets Handling
         run: echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
-
-      - name: Deploy to Production
-        if: github.ref == 'refs/heads/master'
-        run: |
-          echo "Deploying application..."
-          scp -r ./app user@192.168.1.1:/var/www/my-app
-          echo "Deployed successfully to production."
 
       - name: Cleanup
         run: |
