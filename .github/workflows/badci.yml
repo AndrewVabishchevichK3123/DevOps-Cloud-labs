@@ -1,27 +1,46 @@
-name: Bad CI/CD Example
+name: Bad CI/CD
 
-on: push
+on:
+  push:
 
 jobs:
-
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Install
+      - name: Install dependencies
         run: |
+          echo "Installing dependencies..."
           npm install
-          npm install -g some-package
+          npm install -g some-global-package
+          echo "Dependencies installed."
 
-      - name: Test
-        run: npm test
+      - name: Run tests
+        run: |
+          echo "Running tests..."
+          npm test || echo "Tests failed, but continuing..."
+          echo "Tests finished."
 
-      - name: Unsafe Secrets Handling
-        run: echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+      - name: Build project
+        run: |
+          echo "Building the project..."
+          npm run build
+          echo "Using secret: ${{ secrets.SECRET_KEY }}"
+          echo "Build completed."
+
+      - name: Deploy to production
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo "Deploying to production..."
+          scp -o StrictHostKeyChecking=no -r dist/* user@production-server:/var/www/
+          echo "Deployed successfully."
 
       - name: Cleanup
         run: |
-          rm -rf ./*
+          echo "Cleaning up..."
+          rm -rf node_modules/
+          rm -rf dist/
           echo "Cleanup completed."
