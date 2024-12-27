@@ -18,7 +18,7 @@ jobs:
       - name: Build and Test
         run: |
           echo "Starting build and tests..."
-          pytest tests/
+          npm test
           echo "Build and tests completed."
 
       - name: Unsafe Secrets Handling
