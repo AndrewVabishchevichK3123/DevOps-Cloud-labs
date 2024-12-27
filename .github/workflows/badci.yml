@@ -12,6 +12,7 @@ jobs:
       - name: Build
         run: |
           echo "Starting build..."
+          ls -la
           docker build -t my-app:latest .
           echo "Build finished."
 
