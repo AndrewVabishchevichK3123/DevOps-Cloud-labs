@@ -6,127 +6,166 @@
 
 ## Начнем с плохого CI/CD файла
 ```
-# Badci.yml
-stages:
-  - build
-  - test
-  - deploy
 
-build_job:
-  stage: build
-  script:
-    - echo "Starting build..."
-    - docker build -t my-app:latest . # снова на те же грабли, неопределенность версий
-    - echo "Build finished."
+name: Bad CI/CD
 
-test_job:
-  stage: test
-  script:
-    - echo "Starting tests..."
-    - pytest tests/
-    - echo "Tests finished."
+on:
+  push:
+    branches:
+      - main
 
-deploy_job:
-  stage: deploy
-  script:
-    - echo "Deploying..."
-    - scp -r ./app user@production:/var/www/my-app # SCP — некруто
-  only:
-    - master
-
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        run: git clone https://github.com/AndrewVabishchevichK3123/DevOps-Cloud-labs
+      
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies..."
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip
+          
+      - name: Run tests
+        run: |
+          echo "Skipping tests..."
+      
+      - name: Deploy
+        run: |
+           echo "Deploying..."
+      
+      - name: Cleanup
+        run: |
+          echo "Cleaning up..."
+          rm -rf /build
 ```
 
 * Неопределенность версий (использование latest):
 
 Использование тега latest в Docker-образах может привести к разным результатам при каждом запуске пайплайна, так как образ будет меняться, и это может вызвать нестабильность.
 
-* Отсутствие кеширования Docker слоев:
+* Устанавливаются Python и pip, но непонятно, какие зависимости требуются для проекта:
 
-Каждый раз билд Docker начинается с нуля, что увеличивает время выполнения пайплайна и нагрузку на инфраструктуру.
+Нет информации о файле requirements.txt или другом способе указания зависимостей. Установка лишних пакетов (например, python3, если проект не использует Python) тратит ресурсы.
 
-* Прямое использование SCP для деплоя:
+* Этап Run tests фактически пропущен:
 
-SCP — это небезопасный и непродуктивный способ развертывания. Он не поддерживает откаты и не интегрируется с системами управления версиями для деплоя.
+Тесты — важная часть CI/CD. Без их выполнения нельзя гарантировать, что приложение работает корректно. Если тесты пропущены, в продакшен может быть выложен неработающий или нестабильный код.
 
-* Отсутствие параллельного выполнения задач:
+* Этап Deploy состоит только из строки: echo "Deploying...":
 
-Все задачи выполняются последовательно, что увеличивает общее время выполнения пайплайна.
+Никакой реальной логики деплоя нет. Код не перемещается на сервер или в облачное хранилище. Не указаны параметры доступа (например, ключи SSH, адрес сервера, директория деплоя).
 
-* Отсутствие проверки веток при деплое:
+* Отсутствие проверки веток при деплое:Этап Cleanup удаляет содержимое директории /build:
 
-В данном примере деплой разрешен только для ветки master. Это ограничивает возможности работы с другими окружениями, что затрудняет CI/CD для многоветочной разработки.
+Директория /build может быть системной и не связанной с проектом. Команда rm -rf в корневых директориях крайне опасна: можно случайно удалить критически важные файлы.
+
+## Скрины
+
+![image](https://github.com/user-attachments/assets/5887738e-1483-4c8d-8231-65783abe5502)
+
+![image](https://github.com/user-attachments/assets/8826b37f-a2f1-4395-a281-340e79fca411)
 
 
 Попробуем все исправить
 
 ```
-# Goodci.yml
-stages:
-  - build
-  - test
-  - deploy
 
-variables:
-  DOCKER_IMAGE: my-app
-  DOCKER_TAG: $CI_COMMIT_SHA
-  CACHE_REGISTRY: registry.gitlab.com/my-app/cache
+name: Good CI/CD
 
-before_script:
-  - echo "Preparing environment..."
+on:
+  push:
+    branches:
+      - main
 
-build_job:
-  stage: build
-  script:
-    - echo "Starting build with cache..."
-    - docker build --cache-from $CACHE_REGISTRY -t $DOCKER_IMAGE:$DOCKER_TAG .
-    - docker push $DOCKER_IMAGE:$DOCKER_TAG
-  only:
-    - develop
-    - master
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-22.04
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-test_job:
-  stage: test
-  script:
-    - echo "Starting tests..."
-    - pytest tests/
-  parallel:
-    matrix:
-      - PYTHON_VERSION: 3.8
-      - PYTHON_VERSION: 3.9
-  only:
-    - develop
-    - master
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies..."
+          pip install -r lab03/requirements.txt
 
-deploy_job:
-  stage: deploy
-  script:
-    - echo "Deploying application..."
-    - kubectl set image deployment/my-app my-app=$DOCKER_IMAGE:$DOCKER_TAG --record
-  environment:
-    name: production
-  only:
-    - master
+      - name: Run tests
+        run: |
+          echo "Running tests..."
+          if [ -d tests ]; then
+            pytest tests
+          else
+            echo "No tests found. Skipping test step."
+          fi
+      
+      - name: Build application
+        run: |
+          echo "Building application..."
+          if [ -d src ]; then
+            mkdir -p build
+            cp -r src/* build/
+            echo "Build complete."
+          else
+            echo "Directory 'src' does not exist. Skipping build step."
+          fi
+
+      - name: Deploy to production
+        env:
+          DEPLOY_SERVER: ${{ secrets.DEPLOY_SERVER }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: /var/www/my-app
+        run: |
+          echo "Deploying to production server..."
+          if [ "$(ls -A build/)" ]; then
+            scp -o StrictHostKeyChecking=no -r build/* $DEPLOY_USER@$DEPLOY_SERVER:$DEPLOY_PATH
+            echo "Deployment complete."
+          else
+            echo "No files to deploy. Skipping deployment."
+          fi
+
+      - name: Cleanup
+        run: |
+          echo "Cleaning up local build files..."
+          rm -rf build
+
+
 ```
 
 * Исправление неопределенности версий:
 
-В "хорошем" CI/CD файле вместо тега latest используется переменная $CI_COMMIT_SHA, которая уникальна для каждого коммита, что гарантирует постоянтсво версий и предсказуемость сборок.
+В "хорошем" CI/CD файле вместо тега latest используется ubuntu-22.04, что позволит избежать нежелательных ошибок, связанных с несовместимостью версий.
 
-* Исправление кеширования Docker слоев:
+* Проверка наличия необходимых файлов и директорий:
+  
+Прежде чем выполнить важные операции, такие как установка зависимостей, запуск тестов или деплой, файл проверяет, существует ли нужная директория или файл.
 
-Включено кеширование Docker слоев с использованием переменной --cache-from, что сокращает время сборки (ура) и снижает нагрузку на ресурсы.
+* Использование секретов для деплоя:
 
-* Исправление деплоя:
+В файле используется GitHub Secrets для безопасного хранения данных, таких как данные для подключения к серверу (например, DEPLOY_SERVER, DEPLOY_USER), что предотвращает утечку чувствительной информации
 
-Вместо небезопасного SCP используется деплой через Kubernetes с командой kubectl set image, что позволяет легко управлять откатами и историями изменений в продакшене.
+* Контроль над зависимостями:
+  
+Зависимости устанавливаются только из файла requirements.txt, что помогает поддерживать четкость и контроль над тем, какие зависимости должны быть установлены
 
-* Параллельное выполнение тестов:
+* Использование конкретной версии Python:
 
-Включена параллелизация тестов по различным версиям Python с использованием matrix параметра, что позволяет ускорить процесс CI/CD.
+Для стабильности работы пайплайна используется конкретная версия Python (3.9)
 
-* Разделение окружений:
+## Скрины
 
-Добавлено использование разных веток для билдов и деплоя в разные окружения, что позволяет развертывать приложение на различных стадиях разработки.
+![image](https://github.com/user-attachments/assets/ce498863-bbc0-4774-a2e3-fa8a66a52dd0)
+
+![image](https://github.com/user-attachments/assets/27b4347f-e856-441c-8bc8-ec18df227ac1)
+
 
 ## Заключение
 
