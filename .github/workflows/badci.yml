@@ -1,4 +1,4 @@
-name: Bad CI/CD Without NPM
+name: Bad CI/CD
 
 on:
   push:
