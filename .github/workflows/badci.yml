@@ -30,7 +30,7 @@ jobs:
       - name: Deploy to production
         run: |
           echo "Deploying to production..."
-          scp -r build/* user@production-server:/var/www/my-app
+          scp -r .lab03/* user@production-server:/var/www/my-app
           echo "Deployment complete."
       
       # Ошибка: Удаление важных файлов
