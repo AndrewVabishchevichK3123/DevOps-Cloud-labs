@@ -12,7 +12,7 @@ jobs:
     steps:
       # Ошибка: Неправильная проверка репозитория
       - name: Checkout code
-        run: git clone https://github.com/example/repo.git
+        run: git clone https://github.com/AndrewVabishchevichK3123/DevOps-Cloud-labs
       
       # Ошибка: Установка зависимостей без указания используемого инструмента
       - name: Install dependencies
