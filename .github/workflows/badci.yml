@@ -10,23 +10,19 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      # Ошибка: Неправильная проверка репозитория
       - name: Checkout code
         run: git clone https://github.com/AndrewVabishchevichK3123/DevOps-Cloud-labs
       
-      # Ошибка: Установка зависимостей без указания используемого инструмента
       - name: Install dependencies
         run: |
           echo "Installing dependencies..."
           sudo apt-get update
           sudo apt-get install -y python3 python3-pip
           
-      # Ошибка: Отсутствие проверки тестов
       - name: Run tests
         run: |
           echo "Skipping tests..."
       
-      # Ошибка: Использование неправильного сервера для деплоя
       - name: Deploy
         run: |
            echo "Deploying..."
