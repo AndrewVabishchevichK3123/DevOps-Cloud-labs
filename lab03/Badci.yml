@@ -1,4 +1,4 @@
-name: Bad CI/CD
+name: CI/CD Workflow
 
 on:
   push:
@@ -10,11 +10,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: latest
+
+      - name: Debug directory
+        run: |
+          echo "Debugging directory:"
+          pwd
+          ls -la
+
       - name: Install dependencies
-        run: npm install
+        run: |
+          if [ ! -f "package.json" ]; then
+            echo "Error: package.json not found!"
+            exit 1
+          fi
+          npm install
+
       - name: Build
         run: npm run build
