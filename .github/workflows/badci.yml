@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v1  # Старая версия
+        
+      - name: Change directory
+        run: cd DevOps-Cloud-labs/.github/workflows
 
       - name: node.js
         run: |
