@@ -1,34 +1,46 @@
-name: CI/CD Workflow
+name: Bad CI/CD Without NPM
 
 on:
   push:
     branches:
-      - master 
+      - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: latest
-
-      - name: Debug directory
-        run: |
-          echo "Debugging directory:"
-          pwd
-          ls -la
-
+      # Ошибка: Неправильная проверка репозитория
+      - name: Checkout code
+        run: git clone https://github.com/example/repo.git
+      
+      # Ошибка: Установка зависимостей без указания используемого инструмента
       - name: Install dependencies
         run: |
-          if [ ! -f "package.json" ]; then
-            echo "Error: package.json not found!"
-            exit 1
-          fi
-          npm install
-
-      - name: Build
-        run: npm run build
+          echo "Installing dependencies..."
+          apt-get install -y python3 pip3
+          
+      # Ошибка: Отсутствие проверки тестов
+      - name: Run tests
+        run: |
+          echo "Skipping tests..."
+      
+      # Ошибка: Неправильная сборка (путь может быть некорректным)
+      - name: Build project
+        run: |
+          echo "Building project..."
+          mkdir build
+          cp -r src/* build/
+      
+      # Ошибка: Использование неправильного сервера для деплоя
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production..."
+          scp -r build/* user@production-server:/var/www/my-app
+          echo "Deployment complete."
+      
+      # Ошибка: Удаление важных файлов
+      - name: Cleanup
+        run: |
+          echo "Cleaning up..."
+          rm -rf /build
