@@ -26,13 +26,6 @@ jobs:
         run: |
           echo "Skipping tests..."
       
-      # Ошибка: Неправильная сборка (путь может быть некорректным)
-      - name: Build project
-        run: |
-          echo "Building project..."
-          mkdir build
-          cp -r src/* build/
-      
       # Ошибка: Использование неправильного сервера для деплоя
       - name: Deploy to production
         run: |
