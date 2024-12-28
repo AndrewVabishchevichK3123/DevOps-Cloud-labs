@@ -1,46 +1,65 @@
-#Goodci.yml
-stages:
-  - build
-  - test
-  - deploy
 
-variables:
-  DOCKER_IMAGE: my-app
-  DOCKER_TAG: $CI_COMMIT_SHA
-  CACHE_REGISTRY: registry.gitlab.com/my-app/cache
+name: Good CI/CD
 
-before_script:
-  - echo "Preparing environment..."
+on:
+  push:
+    branches:
+      - main
 
-build_job:
-  stage: build
-  script:
-    - echo "Starting build with cache..."
-    - docker build --cache-from $CACHE_REGISTRY -t $DOCKER_IMAGE:$DOCKER_TAG .
-    - docker push $DOCKER_IMAGE:$DOCKER_TAG
-  only:
-    - develop
-    - master
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-22.04
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-test_job:
-  stage: test
-  script:
-    - echo "Starting tests..."
-    - pytest tests/
-  parallel:
-    matrix:
-      - PYTHON_VERSION: 3.8
-      - PYTHON_VERSION: 3.9
-  only:
-    - develop
-    - master
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies..."
+          pip install -r lab03/requirements.txt
 
-deploy_job:
-  stage: deploy
-  script:
-    - echo "Deploying application..."
-    - kubectl set image deployment/my-app my-app=$DOCKER_IMAGE:$DOCKER_TAG --record
-  environment:
-    name: production
-  only:
-    - master
+      - name: Run tests
+        run: |
+          echo "Running tests..."
+          if [ -d tests ]; then
+            pytest tests
+          else
+            echo "No tests found. Skipping test step."
+          fi
+      
+      - name: Build application
+        run: |
+          echo "Building application..."
+          if [ -d src ]; then
+            mkdir -p build
+            cp -r src/* build/
+            echo "Build complete."
+          else
+            echo "Directory 'src' does not exist. Skipping build step."
+          fi
+
+      - name: Deploy to production
+        env:
+          DEPLOY_SERVER: ${{ secrets.DEPLOY_SERVER }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: /var/www/my-app
+        run: |
+          echo "Deploying to production server..."
+          if [ "$(ls -A build/)" ]; then
+            scp -o StrictHostKeyChecking=no -r build/* $DEPLOY_USER@$DEPLOY_SERVER:$DEPLOY_PATH
+            echo "Deployment complete."
+          else
+            echo "No files to deploy. Skipping deployment."
+          fi
+
+      - name: Cleanup
+        run: |
+          echo "Cleaning up local build files..."
+          rm -rf build
+
