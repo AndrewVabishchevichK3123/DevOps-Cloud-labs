@@ -27,7 +27,7 @@ jobs:
         run: |
           echo "Running tests..."
           if [ -d tests ]; then
-            pytest tests/
+            pytest tests
           else
             echo "No tests found. Skipping test step."
       
