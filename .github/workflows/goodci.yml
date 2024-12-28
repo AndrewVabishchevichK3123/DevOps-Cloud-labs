@@ -30,6 +30,7 @@ jobs:
             pytest tests
           else
             echo "No tests found. Skipping test step."
+          fi
       
       - name: Build application
         run: |
