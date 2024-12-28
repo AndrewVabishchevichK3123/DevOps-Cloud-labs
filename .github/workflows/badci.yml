@@ -25,7 +25,7 @@ jobs:
         # (4) Нет кэширования зависимостей
         # (5) Установка без виртуального окружения
         run: |
-          pip install -r DevOps-Cloud-labs/lab03/requirements.txt
+          pip install -r lab03/requirements.txt
 
       - name: Run tests
         run: |
