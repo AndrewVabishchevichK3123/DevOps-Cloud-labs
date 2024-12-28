@@ -1,47 +1,38 @@
-name: Bad CI/CD
+name: Bad CI
 
 on:
   push:
+    branches:
+      - '*' # (1) Неоптимальные триггеры для сборок — запускается при пуше в любую ветку
+  pull_request:
+    branches:
+      - '*' # (1) То же самое для pull_request в любую ветку
 
 jobs:
-  build-and-deploy:
+  build_and_deploy: # (2) Нет разделения логики на разные jobs; всё в одном
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v1 # (3) Устаревшие версии экшенов
 
-      - name: Install dependencies
+      - name: Setup Python
+        uses: actions/setup-python@v2 # (3) Устаревшие версии экшенов
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies 
+        # (4) Нет кэширования зависимостей
+        # (5) Установка без виртуального окружения
         run: |
-          echo "Installing dependencies..."
-          npm init -y
-          npm install
-          npm install -g some-global-package
-          echo "Dependencies installed."
+          pip install -r devops/lab_3/requirements.txt
 
       - name: Run tests
         run: |
-          echo "Running tests..."
-          npm test || echo "Tests failed, but continuing..."
-          echo "Tests finished."
+          pytest
+        continue-on-error: true # (6) Игнорирование ошибок тестирования
 
-      - name: Build project
-        run: |
-          echo "Building the project..."
-          npm run build
-          echo "Using secret: ${{ secrets.SECRET_KEY }}"
-          echo "Build completed."
-
-      - name: Deploy to production
-        if: github.ref == 'refs/heads/master'
-        run: |
-          echo "Deploying to production..."
-          scp -o StrictHostKeyChecking=no -r dist/* user@production-server:/var/www/
-          echo "Deployed successfully."
-
-      - name: Cleanup
-        run: |
-          echo "Cleaning up..."
-          rm -rf node_modules/
-          rm -rf dist/
-          echo "Cleanup completed."
+      - name: Deploy
+        # (7) Жёстко закодированный секрет
+        run: | 
+          echo "Deploying to production with SECRET=hardcoded_secret"
