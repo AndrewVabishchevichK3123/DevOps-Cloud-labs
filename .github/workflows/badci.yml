@@ -18,8 +18,8 @@ jobs:
       - name: Install dependencies
         run: |
           echo "Installing dependencies..."
-          apt-get update
-          apt-get install -y python3 pip3
+          sudo apt-get update
+          sudo apt-get install -y python3 pip3
           
       # Ошибка: Отсутствие проверки тестов
       - name: Run tests
