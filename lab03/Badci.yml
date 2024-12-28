@@ -1,27 +1,20 @@
-#Badci.yml
-stages:
-  - build
-  - test
-  - deploy
+name: Bad CI/CD
 
-build_job:
-  stage: build
-  script:
-    - echo "Starting build..."
-    - docker build -t my-app:latest .
-    - echo "Build finished."
+on:
+  push:
+    branches:
+      - master 
 
-test_job:
-  stage: test
-  script:
-    - echo "Starting tests..."
-    - pytest tests/
-    - echo "Tests finished."
-
-deploy_job:
-  stage: deploy
-  script:
-    - echo "Deploying..."
-    - scp -r ./app user@production:/var/www/my-app 
-  only:
-    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: latest
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
