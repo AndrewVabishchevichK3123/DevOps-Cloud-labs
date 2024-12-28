@@ -26,7 +26,7 @@ jobs:
       - name: Run tests
         run: |
           echo "Running tests..."
-          pytest lab03/tests/
+          pytest lab03/tests
       
       - name: Build application
         run: |
