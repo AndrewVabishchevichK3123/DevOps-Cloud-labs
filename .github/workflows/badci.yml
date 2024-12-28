@@ -28,9 +28,17 @@ jobs:
       
       # Ошибка: Использование неправильного сервера для деплоя
       - name: Deploy to production
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          echo "Setting up SSH..."
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H production-server >> ~/.ssh/known_hosts
+          
           echo "Deploying to production..."
-          scp -r DevOps-Cloud-labs/* user@production-server:/var/www/my-app
+          rsync -avz DevOps-Cloud-labs/ user@production-server:/var/www/my-app
           echo "Deployment complete."
       
       # Ошибка: Удаление важных файлов
