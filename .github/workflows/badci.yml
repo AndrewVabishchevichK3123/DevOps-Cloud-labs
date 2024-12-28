@@ -27,19 +27,9 @@ jobs:
           echo "Skipping tests..."
       
       # Ошибка: Использование неправильного сервера для деплоя
-      - name: Deploy to production
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy
         run: |
-          echo "Setting up SSH..."
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H production-server >> ~/.ssh/known_hosts
-          
-          echo "Deploying to production..."
-          rsync -avz DevOps-Cloud-labs/ user@production-server:/var/www/my-app
-          echo "Deployment complete."
+           echo "Deploying..."
       
       # Ошибка: Удаление важных файлов
       - name: Cleanup
